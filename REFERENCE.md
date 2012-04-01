@@ -22,3 +22,7 @@ There seem to be two ideas on where to place (clone) the files:
 2. In the root directory
 
 When the files are cloned to a .dotfiles dir, it is common to perform "installation" (i.e. symlinking) via a `rake` task.
+
+## ZSH
+
+[Geoffrey Grosenbach's zsh prompt](https://peepcode.com/blog/2012/my-command-line-prompt)
