@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+# Deletes all branches that have already been merged to master.
+# Only works on local branches unless `--remote` is passed.
+# If `--remote` is passed, remote branches are first pruned to pick up any remote deletions.
+
+
+def include_remote?
+  ARGV.include?('--remote')
+end
+
+def remotes
+  `git remote`.split.map(&:strip)
+end
+
+def branches
+  `git branch #{include_remote? ? '-a' : ''} --merged`.split.map(&:strip).reject {|b| b == '*' || b == 'master'}
+end
+
+def remote_branch?(branch)
+  branch =~ /^remotes\//
+end
+
+if include_remote?
+  puts "Pruning remote branches..."
+  remotes.each do |remote|
+    puts "  #{remote}"
+    `git remote prune #{remote}`
+  end
+  puts "Done\n"
+end
+
+puts "Deleting branches already merged to branch master..."
+branches.each do |branch|
+  if remote_branch?(branch)
+    branch =~ %r{^remotes\/(#{remotes.join('|')})\/(.*)}
+    
+    remote = $1
+    branch = $2
+
+    puts "  Deleting remote branch #{branch} from #{remote}"
+    puts "  " + `git push #{remote} :#{branch}`
+  else
+    puts "  Deleting local branch #{branch}"
+    puts "  " + `git branch -d #{branch}`
+  end
+end
+puts "Done\n"
